@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+    import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -24,6 +25,7 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     private val TAG = com.knoxpo.flutter_plugin.FlutterPlugin::class.java.simpleName
     private val METHOD_CHANNEL = "flutter_plugin"
+    private val EVENT_CHANNEL = "event_plugin"
     private val CHANNEL_ID = "$TAG.CHANNEL_ID"
     private val ACTION_NOTIFICATION = "$TAG.ACTION_NOTIFICATION"
 
@@ -34,15 +36,11 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     private var openingAction: String? = null
     var methodChannel: MethodChannel? = null
+    private var eventChannel: EventChannel? = null
 
     var activityIsInBackground = false
 
-    private val notificationReceiver = object : NotificationReceiver() {
-        override fun onNotificationReceived() {
-            Log.d(TAG, "Notification received")
-            methodChannel?.invokeMethod("onNotification", null)
-        }
-    }
+    private var eventChannelSink: EventChannel.EventSink? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.e(TAG, "onAttachedToEngine")
@@ -54,6 +52,25 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         }
 
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, METHOD_CHANNEL)
+        eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, EVENT_CHANNEL)
+        eventChannel?.setStreamHandler(
+                object : EventChannel.StreamHandler {
+                    override fun onListen(arguments: Any?, event: EventChannel.EventSink?) {
+                        Log.d(TAG, "on Listen")
+                        eventChannelSink = event
+
+                        val isFromHistory = (activity!!.intent!!.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+
+                        if (activity?.intent?.action == ACTION_NOTIFICATION && !isFromHistory) {
+                            event?.success("Hello World")
+                        }
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        Log.e(TAG, "onCancel")
+                    }
+                }
+        )
         methodChannel?.setMethodCallHandler(this)
     }
 
@@ -67,9 +84,7 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         Log.d(TAG, context?.toString() ?: "No Context")
 
         when (call.method) {
-            "getPlatformVersion" -> {
-                result.success("Android ${Build.VERSION.RELEASE}")
-            }
+
             "notification" -> {
                 //context?.registerReceiver(this,null)
                 val name = call.argument<String>("name")
@@ -88,14 +103,13 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
             "openScreen" -> {
 
-                if (this.activity?.intent?.action == ACTION_NOTIFICATION) {
-                    //methodChannel?.invokeMethod("onNotification", null)
+                val isFromHistory = (activity!!.intent!!.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+
+                if (this.activity?.intent?.action == ACTION_NOTIFICATION && !isFromHistory) {
                     result.success(true)
                 } else {
                     result.success(false)
                 }
-
-                openingAction = null
             }
             else -> {
                 result.notImplemented()
@@ -137,7 +151,6 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private fun setPendingIntent(): PendingIntent {
         val intent = Intent(context!!, getActvityClass(context!!))
         intent.action = ACTION_NOTIFICATION
-        //intent.putExtra(EXTRA_NOTIFICATION, "new data")
 
         return PendingIntent
                 .getActivity(
@@ -172,16 +185,22 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
 
         Log.d(TAG, "onAttachedToActivity")
-
         this.activity = binding.activity
         activityIsInBackground = false
-        this.openingAction = binding.activity.intent.action
+
         //Log.e(TAG, "onAttachedToActivity ${binding.activity.intent.action}")
 
         binding.addOnNewIntentListener {
             if (it.action == ACTION_NOTIFICATION) {
                 Log.e(TAG, "${it.action}")
-                methodChannel?.invokeMethod("onNotification", mapOf("data" to "Welcome from Native"))
+
+                try {
+                    Log.d(TAG, eventChannelSink?.toString())
+                    eventChannelSink?.success("Hello World")
+
+                } catch (e: java.lang.Exception) {
+                    Log.e(TAG, "Error ", e)
+                }
                 true
             } else {
                 false

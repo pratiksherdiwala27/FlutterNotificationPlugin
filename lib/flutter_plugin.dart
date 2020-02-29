@@ -1,16 +1,43 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class FlutterPlugin {
-  static const MethodChannel _channel = const MethodChannel('flutter_plugin');
+  final RouteObserver<PageRoute<dynamic>> routeObserver =
+      RouteObserver<PageRoute<dynamic>>();
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  MethodChannel _channel;
+
+  EventChannel _eventChannel;
+
+  StreamController _communicator = StreamController();
+
+  Stream<dynamic> _stream;
+
+  static FlutterPlugin _instance;
+
+  factory FlutterPlugin() {
+    if (_instance == null) {
+      final MethodChannel methodChannel = const MethodChannel('flutter_plugin');
+      final EventChannel eventChannel = const EventChannel('event_plugin');
+      _instance = FlutterPlugin.private(methodChannel, eventChannel);
+    }
+    return _instance;
   }
 
-  static Future<String> showNotification(
+  @visibleForTesting
+  FlutterPlugin.private(this._channel, this._eventChannel) {
+    _eventChannel.receiveBroadcastStream().listen((data) {
+      _communicator.sink.add(data);
+    }, onDone: () {
+      _communicator.close();
+    });
+
+    _stream = _communicator.stream.asBroadcastStream();
+  }
+
+  Future<String> showNotification(
       String name, String message, String email) async {
     Map<String, String> details = {
       'name': name,
@@ -25,8 +52,8 @@ class FlutterPlugin {
     }
   }
 
-  static Future<bool> openScreen() async {
-    return await _channel.invokeMethod('openScreen');
+  get communicatorStream {
+    return _stream;
   }
 }
 
