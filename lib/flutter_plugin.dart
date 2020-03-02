@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class FlutterPlugin {
-  final RouteObserver<PageRoute<dynamic>> routeObserver =
+  final RouteObserver<PageRoute<dynamic>> _routeObserver =
       RouteObserver<PageRoute<dynamic>>();
 
   MethodChannel _channel;
@@ -16,6 +16,18 @@ class FlutterPlugin {
   Stream<dynamic> _stream;
 
   static FlutterPlugin _instance;
+
+  static FlutterPlugin get instance {
+    return FlutterPlugin();
+  }
+
+  static RouteObserver get routeObserver {
+    return FlutterPlugin()._routeObserver;
+  }
+
+  static get communicatorStream {
+    return FlutterPlugin()._stream;
+  }
 
   factory FlutterPlugin() {
     if (_instance == null) {
@@ -50,19 +62,5 @@ class FlutterPlugin {
       print(error.toString());
       throw error;
     }
-  }
-
-  /*
-  Future<String> showNotification(Map<String, dynamic> data) async {
-    try {
-      return await _channel.invokeMethod('notification', data);
-    } catch (error) {
-      print(error.toString());
-      throw error;
-    }
-  }*/
-
-  get communicatorStream {
-    return _stream;
   }
 }

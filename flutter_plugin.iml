@@ -14,6 +14,9 @@
       <excludeFolder url="file://$MODULE_DIR$/example/action_notification/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/example/action_notification/build" />
       <excludeFolder url="file://$MODULE_DIR$/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/handle_notification/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/handle_notification/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/handle_notification/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/example/route_observer/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/example/route_observer/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/example/route_observer/build" />

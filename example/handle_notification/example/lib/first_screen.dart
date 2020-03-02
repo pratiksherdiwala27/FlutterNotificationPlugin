@@ -1,21 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_plugin/flutter_plugin.dart';
-import 'package:flutter_plugin/plugin_mixin.dart';
-
-/*
-final RouteObserver<PageRoute<dynamic>> routeObserver =
-    RouteObserver<PageRoute<dynamic>>();
-*/
+import 'package:handle_notification/handle_notification.dart';
+import 'package:handle_notification/notification_mixin.dart';
 
 class FirstScreen extends StatefulWidget {
   @override
   _FirstScreenState createState() => _FirstScreenState();
 }
 
-class _FirstScreenState extends State<FirstScreen> with PluginMixin {
+class _FirstScreenState extends State<FirstScreen> with NotificationMixin {
+  HandleNotification _plugin = HandleNotification();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +21,7 @@ class _FirstScreenState extends State<FirstScreen> with PluginMixin {
             FlatButton(
               onPressed: () async {
                 try {
-                  final result = await FlutterPlugin.instance.showNotification(
+                  final result = await _plugin.showNotification(
                     'Pratik',
                     'Hello',
                     'abc@gmail.com',
@@ -49,14 +43,6 @@ class _FirstScreenState extends State<FirstScreen> with PluginMixin {
         ),
       ),
     );
-  }
-
-  Future<void> _handleMethod(MethodCall call) async {
-    switch (call.method) {
-      case "onNotification":
-        print("_handleMethod");
-        navigate();
-    }
   }
 
   void navigate() {

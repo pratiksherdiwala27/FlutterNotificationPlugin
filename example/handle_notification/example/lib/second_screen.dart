@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_plugin/plugin_mixin.dart';
+import 'package:handle_notification/notification_mixin.dart';
 
 class SecondScreen extends StatefulWidget {
   SecondScreen();
@@ -8,7 +8,7 @@ class SecondScreen extends StatefulWidget {
   _SecondScreenState createState() => _SecondScreenState();
 }
 
-class _SecondScreenState extends State<SecondScreen> with PluginMixin {
+class _SecondScreenState extends State<SecondScreen> with NotificationMixin {
   String _data = 'Second Screen';
 
   @override
@@ -33,7 +33,6 @@ class _SecondScreenState extends State<SecondScreen> with PluginMixin {
 
   @override
   void onOpenFromNotification(data) {
-    print(data);
-    print('Hello Flutter');
+    print('Second Screen' + data);
   }
 }

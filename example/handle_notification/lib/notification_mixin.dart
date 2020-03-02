@@ -1,15 +1,17 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:handle_notification/handle_notification.dart';
 
-import 'flutter_plugin.dart';
+mixin NotificationMixin<T extends StatefulWidget> on State<T>
+    implements RouteAware {
+  HandleNotification _plugin = HandleNotification();
 
-mixin PluginMixin<T extends StatefulWidget> on State<T> implements RouteAware {
   StreamSubscription _stream;
 
   void _startListening() {
     try {
-      _stream = FlutterPlugin.communicatorStream.listen((data) {
+      _stream = _plugin.communicatorStream.listen((data) {
         print(data.toString());
         onOpenFromNotification(data);
       }, onError: (error) {
@@ -31,7 +33,7 @@ mixin PluginMixin<T extends StatefulWidget> on State<T> implements RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    FlutterPlugin.routeObserver.subscribe(this, ModalRoute.of(context));
+    _plugin.routeObserver.subscribe(this, ModalRoute.of(context));
   }
 
   @override
