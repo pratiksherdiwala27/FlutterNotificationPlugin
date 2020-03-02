@@ -52,11 +52,17 @@ class FlutterPlugin {
     }
   }
 
+  /*
+  Future<String> showNotification(Map<String, dynamic> data) async {
+    try {
+      return await _channel.invokeMethod('notification', data);
+    } catch (error) {
+      print(error.toString());
+      throw error;
+    }
+  }*/
+
   get communicatorStream {
     return _stream;
   }
-}
-
-mixin Hello {
-  void add();
 }

@@ -33,8 +33,9 @@ class _SecondScreenState extends State<SecondScreen> with PluginMixin {
 
   @override
   void onOpenFromNotification(data) {
-    setState(() {
-      _data = 'Hello World';
-    });
+    print(data);
+//    setState(() {
+//      _data = 'Hello World';
+//    });
   }
 }

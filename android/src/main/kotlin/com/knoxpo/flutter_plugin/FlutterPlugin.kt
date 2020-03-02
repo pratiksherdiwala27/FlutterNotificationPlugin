@@ -14,7 +14,7 @@ import androidx.core.app.NotificationCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-    import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -29,22 +29,18 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private val CHANNEL_ID = "$TAG.CHANNEL_ID"
     private val ACTION_NOTIFICATION = "$TAG.ACTION_NOTIFICATION"
 
-    private val EXTRA_NOTIFICATION = "$TAG.EXTRA_NOTIFICATION"
-
     private var context: Context? = null
     private var activity: Activity? = null
+    private var anyValue: Any? = null
 
-    private var openingAction: String? = null
     var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
-
-    var activityIsInBackground = false
 
     private var eventChannelSink: EventChannel.EventSink? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.e(TAG, "onAttachedToEngine")
-        activityIsInBackground = false
+        //activityIsInBackground = false
         context = flutterPluginBinding.applicationContext
 
         flutterPluginBinding.applicationContext.let {
@@ -76,7 +72,7 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         Log.e(TAG, "onDetachedFromEngine")
-        activityIsInBackground = true
+        //activityIsInBackground = true
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -86,21 +82,20 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         when (call.method) {
 
             "notification" -> {
+
                 //context?.registerReceiver(this,null)
                 val name = call.argument<String>("name")
                 val message = call.argument<String>("message")
                 val email = call.argument<String>("email")
+
                 showNotification(
                         name = name!!,
                         email = email!!,
-                        message = message!!,
-                        result = result
+                        message = message!!
                 )
                 result.success("notification")
             }
-            "onNotification" -> {
-                Log.e(TAG, "Hello from native")
-            }
+
             "openScreen" -> {
 
                 val isFromHistory = (activity!!.intent!!.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
@@ -117,7 +112,7 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         }
     }
 
-    private fun showNotification(name: String, message: String, email: String, result: Result) {
+    private fun showNotification(name: String, message: String, email: String) {
 
         Log.e(TAG, context.toString())
         val notificationManager = context?.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
@@ -133,7 +128,8 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 .setContentInfo(email)
                 .setTicker(name)
                 .setContentText(message)
-                .setStyle(NotificationCompat.MessagingStyle(name))
+                //.setStyle(NotificationCompat.MessagingStyle(name))
+                .setStyle(NotificationCompat.InboxStyle())
                 .addAction(0, "ACCEPT", null)
                 .addAction(0, "REJECT", null)
                 .setSmallIcon(android.R.drawable.star_big_on)
@@ -175,7 +171,7 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     override fun onDetachedFromActivity() {
         //context?.unregisterReceiver(notificationReceiver)
-        activityIsInBackground = true
+        //activityIsInBackground = true
     }
 
     override fun onReattachedToActivityForConfigChanges(p0: ActivityPluginBinding) {
@@ -186,18 +182,28 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
         Log.d(TAG, "onAttachedToActivity")
         this.activity = binding.activity
-        activityIsInBackground = false
+        //activityIsInBackground = false
 
-        //Log.e(TAG, "onAttachedToActivity ${binding.activity.intent.action}")
+        //Log.e(TAG, "onAttachedToActivity ${binding.activity.intent.action}")l
 
         binding.addOnNewIntentListener {
             if (it.action == ACTION_NOTIFICATION) {
                 Log.e(TAG, "${it.action}")
+                it.putExtra("name", "Pratik")
+                it.putExtra("email", "abc@gmail.com")
 
                 try {
-                    Log.d(TAG, eventChannelSink?.toString())
-                    eventChannelSink?.success("Hello World")
+                    if (it.extras != null) {
+                        val dataMap = mutableMapOf<String, Any>()
 
+                        it.extras!!.keySet().map { key ->
+                            dataMap[key] = it.extras?.get(key) as Any
+                        }
+
+                        eventChannelSink?.success(dataMap)
+                    } else {
+                        eventChannelSink?.success("No result to be set")
+                    }
                 } catch (e: java.lang.Exception) {
                     Log.e(TAG, "Error ", e)
                 }
@@ -213,3 +219,15 @@ public class FlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 "ctivityForConfigChanges")
     }
 }
+
+
+/***
+ * This 'plugin_name' is used to handle action of notification on Android platform.
+ * extends the PluginMixin class with your StatefulWidget class
+ *
+ *  @override
+ *  void onNotificationReceived(Object data)
+ *
+ *  by overriding this method you can get data
+ *
+ */

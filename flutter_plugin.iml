@@ -10,6 +10,9 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/action_notification/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/action_notification/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/action_notification/build" />
       <excludeFolder url="file://$MODULE_DIR$/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/example/route_observer/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/example/route_observer/.pub" />

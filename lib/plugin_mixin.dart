@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_plugin/flutter_plugin.dart';
+
+import 'flutter_plugin.dart';
 
 mixin PluginMixin<T extends StatefulWidget> on State<T> implements RouteAware {
   FlutterPlugin _plugin = FlutterPlugin();
